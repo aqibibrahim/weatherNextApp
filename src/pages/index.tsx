@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import WeatherCard from '../Compnents/Cards/weather'
+import WeatherCard, { weatherData } from '../Compnents/Cards/weather'
 
 export default function Home() {
 	const [city, setCity] = useState<string>('')
-	const [weatherData, setWeatherData] = useState<any>(null)
+	const [weatherData, setWeatherData] = useState<weatherData | null>(null)
+	const [loading, setLoading] = useState<boolean>(false)
 
 	const fetchWeatherData = async () => {
+		if (!city) return
+
 		try {
+			setLoading(true)
 			const response = await axios.get(
-				`${process.env.NEXT_PUBLIC_BASE_API_URL}2ee7b287b9384c089ca132050231108&q=${city}&aqi=no`
+				`${process.env.NEXT_PUBLIC_BASE_API_URL}${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&q=${city}&aqi=no`
 			)
 			setWeatherData(response.data)
+			setLoading(false)
 		} catch (error) {
 			console.error(error)
 			setWeatherData(null)
+			setLoading(false)
 		}
 	}
 
@@ -40,8 +46,10 @@ export default function Home() {
 					<button
 						className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
 						onClick={fetchWeatherData}
+						disabled={loading}
 					>
-						Get Weather
+						{loading ? 'Please Wait...' : 'Get Weather'}
+
 						<svg
 							className="w-3.5 h-3.5 ml-2"
 							aria-hidden="true"
@@ -58,7 +66,7 @@ export default function Home() {
 							/>
 						</svg>
 					</button>
-					<div className="mt-2 flex flex-wrap">
+					<div className="mt-4 flex flex-wrap">
 						{weatherData ? <WeatherCard weatherData={weatherData} /> : <p>No location found</p>}
 					</div>
 				</div>
